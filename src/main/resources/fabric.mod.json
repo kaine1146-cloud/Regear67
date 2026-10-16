@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "regear",
+  "version": "${version}",
+  "name": "Regear",
+  "description": "Two creative-menu items that fill your hotbar+armor or your inventory with a PvP kit when used. Client-side, creative mode only.",
+  "authors": ["YourName"],
+  "license": "MIT",
+  "icon": "assets/regear/icon.png",
+  "environment": "client",
+  "entrypoints": { "client": ["com.regear.RegearClient"] },
+  "depends": { "fabricloader": ">=0.18.1", "minecraft": "~1.21.11", "java": ">=21", "fabric-api": "*" }
+}
