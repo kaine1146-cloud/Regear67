@@ -1,6 +1,9 @@
 package com.regear;
 
+import com.mojang.brigadier.Command;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.client.MinecraftClient;
@@ -33,10 +36,27 @@ public class RegearClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        System.out.println("[Regear] loaded");
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> {
             entries.add(marker(HOTBAR_NAME, Formatting.AQUA));
             entries.add(marker(INV_NAME, Formatting.LIGHT_PURPLE));
         });
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> {
+            entries.add(marker(HOTBAR_NAME, Formatting.AQUA));
+            entries.add(marker(INV_NAME, Formatting.LIGHT_PURPLE));
+        });
+
+        // Backup: /regear hotbar  and  /regear inventory
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) ->
+                dispatcher.register(ClientCommandManager.literal("regear")
+                        .then(ClientCommandManager.literal("hotbar").executes(ctx -> {
+                            runKit(true);
+                            return Command.SINGLE_SUCCESS;
+                        }))
+                        .then(ClientCommandManager.literal("inventory").executes(ctx -> {
+                            runKit(false);
+                            return Command.SINGLE_SUCCESS;
+                        }))));
 
         UseItemCallback.EVENT.register((player, world, hand) -> {
             ItemStack held = player.getStackInHand(hand);
@@ -53,6 +73,17 @@ public class RegearClient implements ClientModInitializer {
             }
             return ActionResult.FAIL;
         });
+    }
+
+    private static void runKit(boolean hotbar) {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        if (mc.player == null || mc.world == null) return;
+        if (!mc.player.isCreative()) {
+            mc.player.sendMessage(Text.literal("Regear only works in creative mode."), true);
+            return;
+        }
+        if (hotbar) giveHotbarKit(mc.player, mc.world);
+        else giveInventoryKit(mc.player, mc.world);
     }
 
     // ---------- marker items ----------
